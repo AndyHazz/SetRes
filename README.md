@@ -8,3 +8,5 @@ This was created as a useful companion app for ScummVM (which runs in fullscreen
 It switches screen res, runs scumm (or other app passed as a command), and restores native res when the target app closes.
 
 Put the app in the same folder as scummvm.exe and run it with e.g. `.\SetRes.exe "scummvm.exe" 1920 1080`
+
+You can also create a desktop shortcut and set the target to `"C:\Program Files\ScummVM\SetRes.exe" "scummvm.exe" 1920 1080"`
