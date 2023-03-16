@@ -5,14 +5,20 @@ Disclaimer:  App written with lots of help from ChatGPT! I don't know how to cod
 
 This was created as a useful companion app for ScummVM (which runs in fullscreen at native res by default, causing cursor lag and high GPU usage on high dpi screens), but could be useful for other applications ... 
 
-Usage
+## Usage
 To use SetRes, put it in the same directory as the target application. Open a command prompt and navigate to the directory containing the SetRes.exe executable. Then run the following command:
 
 ```SetRes.exe [target app] [width] [height]```
 
 Replace [target app] with the name of the target application including any necessary options (e.g. "scummvm.exe -f"), and replace [width] [height] with the desired resolution (e.g. 1280 720).
 
-Example
+## Example
 To launch ScummVM in fullscreen mode with a resolution of 1280x720, run the following command:
 
 ```SetRes.exe "scummvm.exe -f" 1280 720```
+
+You can also create your own desktop shortcut to SetRes.exe with a target like
+
+```"C:\Program Files\ScummVM\SetRes.exe" "scummvm.exe -f" 1280 720```
+
+You can then set the shortcut to use an icon from scummvm.exe and name it something like 'ScummVM 720p'
