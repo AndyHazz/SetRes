@@ -19,6 +19,6 @@ To launch ScummVM in fullscreen mode with a resolution of 1280x720, run the foll
 
 You can also create your own desktop shortcut to SetRes.exe with a target like
 
-```"C:\Program Files\ScummVM\SetRes.exe" "scummvm.exe -f" 1280 720```
+```"C:\Program Files\ScummVM\SetRes.exe "scummvm.exe --no-console -f" 1280 720```
 
-You can then set the shortcut to use an icon from scummvm.exe and name it something like 'ScummVM 720p'
+You can then set the shortcut to use an icon from scummvm.exe and name it something like 'ScummVM 720p' 😀
