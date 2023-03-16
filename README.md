@@ -6,7 +6,7 @@ Disclaimer:  App written with lots of help from ChatGPT! I don't know how to cod
 This was created as a useful companion app for ScummVM (which runs in fullscreen at native res by default, causing cursor lag and high GPU usage on high dpi screens), but could be useful for other applications ... 
 
 ## Usage
-To use SetRes, put it in the same directory as the target application. Open a command prompt and navigate to the directory containing the SetRes.exe executable. Then run the following command:
+To use SetRes, [download the latest release](https://github.com/AndyHazz/SetRes/releases) and extract it in the same directory as the target application. Open a command prompt and navigate to the directory containing the SetRes.exe executable. Then run the following command:
 
 ```SetRes.exe [target app] [width] [height]```
 
