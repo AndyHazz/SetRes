@@ -1,8 +1,6 @@
-// SetRes.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <windows.h>
 #include <string>
+#include <vector>
 
 int wmain(int argc, wchar_t* argv[])
 {
@@ -13,13 +11,26 @@ int wmain(int argc, wchar_t* argv[])
     }
 
     std::wstring appName = L"";
-    for (int i = 1; i < argc - 2; i++)
+    std::vector<std::wstring> appArgs;
+
+    // Split the target app name and its arguments
+    std::wstring appFullName = argv[1];
+    size_t spacePos = appFullName.find_first_of(L' ');
+    if (spacePos != std::wstring::npos)
     {
-        appName += argv[i];
-        if (i < argc - 3)
+        appName = appFullName.substr(0, spacePos);
+        std::wstring appArgsStr = appFullName.substr(spacePos + 1);
+        size_t argStart = 0, argEnd = 0;
+        while (argEnd != std::wstring::npos)
         {
-            appName += L" ";
+            argEnd = appArgsStr.find_first_of(L' ', argStart);
+            appArgs.push_back(appArgsStr.substr(argStart, argEnd - argStart));
+            argStart = appArgsStr.find_first_not_of(L' ', argEnd);
         }
+    }
+    else
+    {
+        appName = appFullName;
     }
 
     // Parse the screen resolution from the command-line arguments
@@ -53,6 +64,10 @@ int wmain(int argc, wchar_t* argv[])
     startupInfo.cb = sizeof(startupInfo);
     ZeroMemory(&processInfo, sizeof(processInfo));
     std::wstring commandLine = L"\"" + appName + L"\"";
+    for (const auto& arg : appArgs)
+    {
+        commandLine += L" \"" + arg + L"\"";
+    }
     BOOL success = CreateProcessW(NULL, const_cast<LPWSTR>(commandLine.c_str()), NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo);
     if (!success)
     {
