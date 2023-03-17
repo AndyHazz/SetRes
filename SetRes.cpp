@@ -1,90 +1,60 @@
 #include <windows.h>
+#include <iostream>
 #include <string>
-#include <vector>
 
-int wmain(int argc, wchar_t* argv[])
-{
-    if (argc < 3)
-    {
-        // The application name or screen resolution is missing
+int main(int argc, char* argv[]) {
+    if (argc != 4) {
+        std::cerr << "Usage: SetRes.exe \"[target app] [optional flags]\" [width] [height]\n";
         return 1;
     }
 
-    std::wstring appName = L"";
-    std::vector<std::wstring> appArgs;
+    // Parse command-line arguments
+    std::string targetApp = argv[1];
+    int width = std::stoi(argv[2]);
+    int height = std::stoi(argv[3]);
 
-    // Split the target app name and its arguments
-    std::wstring appFullName = argv[1];
-    size_t spacePos = appFullName.find_first_of(L' ');
-    if (spacePos != std::wstring::npos)
-    {
-        appName = appFullName.substr(0, spacePos);
-        std::wstring appArgsStr = appFullName.substr(spacePos + 1);
-        size_t argStart = 0, argEnd = 0;
-        while (argEnd != std::wstring::npos)
-        {
-            argEnd = appArgsStr.find_first_of(L' ', argStart);
-            appArgs.push_back(appArgsStr.substr(argStart, argEnd - argStart));
-            argStart = appArgsStr.find_first_not_of(L' ', argEnd);
-        }
-    }
-    else
-    {
-        appName = appFullName;
-    }
+    // Get the original display resolution
+    DEVMODE dm;
+    dm.dmSize = sizeof(DEVMODE);
+    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm);
+    int origWidth = dm.dmPelsWidth;
+    int origHeight = dm.dmPelsHeight;
 
-    // Parse the screen resolution from the command-line arguments
-    int screenWidth = _wtoi(argv[argc - 2]);
-    int screenHeight = _wtoi(argv[argc - 1]);
+    // Launch the target app
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+    std::wstring wideTargetApp(targetApp.begin(), targetApp.end());
+    CreateProcess(NULL, const_cast<LPWSTR>(wideTargetApp.c_str()), NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
 
-    // Save the current display settings
-    DEVMODE currentMode;
-    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &currentMode);
-
-    // Set the new display settings
-    DEVMODE newMode;
-    ZeroMemory(&newMode, sizeof(newMode));
-    newMode.dmSize = sizeof(newMode);
-    newMode.dmPelsWidth = screenWidth;
-    newMode.dmPelsHeight = screenHeight;
-    newMode.dmBitsPerPel = 32;
-    newMode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-
-    LONG result = ChangeDisplaySettings(&newMode, CDS_FULLSCREEN);
-    if (result != DISP_CHANGE_SUCCESSFUL)
-    {
-        // Handle the error
+    // Change screen resolution
+    DEVMODE dm2;
+    dm2.dmSize = sizeof(DEVMODE);
+    dm2.dmPelsWidth = width;
+    dm2.dmPelsHeight = height;
+    dm2.dmBitsPerPel = dm.dmBitsPerPel;
+    dm2.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL;
+    LONG result = ChangeDisplaySettings(&dm2, CDS_FULLSCREEN);
+    if (result != DISP_CHANGE_SUCCESSFUL) {
+        std::cerr << "Failed to change display settings: " << result << '\n';
         return 1;
     }
 
-    // Launch the application
-    STARTUPINFOW startupInfo;
-    PROCESS_INFORMATION processInfo;
-    ZeroMemory(&startupInfo, sizeof(startupInfo));
-    startupInfo.cb = sizeof(startupInfo);
-    ZeroMemory(&processInfo, sizeof(processInfo));
-    std::wstring commandLine = L"\"" + appName + L"\"";
-    for (const auto& arg : appArgs)
-    {
-        commandLine += L" \"" + arg + L"\"";
-    }
-    BOOL success = CreateProcessW(NULL, const_cast<LPWSTR>(commandLine.c_str()), NULL, NULL, FALSE, 0, NULL, NULL, &startupInfo, &processInfo);
-    if (!success)
-    {
-        // Handle the error
+    // Wait for the target app to exit
+    WaitForSingleObject(pi.hProcess, INFINITE);
+
+    // Restore original display resolution
+    result = ChangeDisplaySettings(&dm, 0);
+    if (result != DISP_CHANGE_SUCCESSFUL) {
+        std::cerr << "Failed to restore display settings: " << result << '\n';
         return 1;
     }
 
-    // Wait for the application to exit
-    WaitForSingleObject(processInfo.hProcess, INFINITE);
-
-    // Restore the previous display settings
-    result = ChangeDisplaySettings(&currentMode, CDS_FULLSCREEN);
-    if (result != DISP_CHANGE_SUCCESSFUL)
-    {
-        // Handle the error
-        return 1;
-    }
+    // Close process and thread handles.
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
 
     return 0;
 }
